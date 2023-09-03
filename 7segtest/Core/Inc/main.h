@@ -61,6 +61,10 @@ void Error_Handler(void);
 #define nLED_GPIO_Port GPIOC
 #define USER_KEY_Pin GPIO_PIN_0
 #define USER_KEY_GPIO_Port GPIOA
+#define seg_clock_Pin GPIO_PIN_8
+#define seg_clock_GPIO_Port GPIOB
+#define seg_data_Pin GPIO_PIN_9
+#define seg_data_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

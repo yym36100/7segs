@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "tm1637.h"
 
 /* USER CODE END Includes */
 
@@ -105,6 +106,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  tm1637_init();
 
   /* USER CODE END SysInit */
 
@@ -126,8 +128,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 //	  printf(".\n");
 	  HAL_GPIO_TogglePin(nLED_GPIO_Port,nLED_Pin);
-	  //HAL_Delay(100);
-	  Delay_us(10);
+	  HAL_Delay(10);
+	  //Delay_us(10);
+	  tm1637_init();
   }
   /* USER CODE END 3 */
 }
@@ -230,6 +233,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(nLED_GPIO_Port, nLED_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, seg_clock_Pin|seg_data_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : nLED_Pin */
   GPIO_InitStruct.Pin = nLED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -242,6 +248,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_KEY_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : seg_clock_Pin seg_data_Pin */
+  GPIO_InitStruct.Pin = seg_clock_Pin|seg_data_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
