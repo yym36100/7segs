@@ -57,6 +57,24 @@ int __io_putchar(int ch) {
 	HAL_UART_Transmit(&huart1, &c, 1, 100);
 }
 
+void Delay_us(uint32_t d){
+	//systick downconts from reload val
+
+	//int32_t start = SysTick->VAL;
+	int32_t end = SysTick->VAL - (d-1)*96;
+
+	if(end>=0){
+		while(SysTick->VAL> end);
+
+	} else {
+		end += SysTick->LOAD;
+		if(SysTick->VAL< end) while(SysTick->VAL< end);
+		while(SysTick->VAL> end);
+
+	}
+
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,7 +112,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello\n");
+  printf("Hello 100ms RAM\n");
 
 
   /* USER CODE END 2 */
@@ -106,9 +124,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  printf(".\n");
+//	  printf(".\n");
 	  HAL_GPIO_TogglePin(nLED_GPIO_Port,nLED_Pin);
-	  HAL_Delay(250);
+	  //HAL_Delay(100);
+	  Delay_us(10);
   }
   /* USER CODE END 3 */
 }
