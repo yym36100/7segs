@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tm1637.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -59,30 +60,13 @@ static void MX_TIM11_Init(void);
 int __io_putchar(int ch) {
 	uint8_t c= ch;
 	HAL_UART_Transmit(&huart1, &c, 1, 100);
+	return 1;
 }
 
 void Delay_us(uint32_t d){
 	//using timer 11
 	htim11.Instance->CNT = 0;
 	while(htim11.Instance->CNT<d*96);
-
-}
-
-void Delay_us2(uint32_t d){
-	//systick downconts from reload val
-
-	//int32_t start = SysTick->VAL;
-	int32_t end = SysTick->VAL - (d-1)*96;
-
-	if(end>=0){
-		while(SysTick->VAL> end);
-
-	} else {
-		end += SysTick->LOAD;
-		if(SysTick->VAL< end) while(SysTick->VAL< end);
-		while(SysTick->VAL> end);
-
-	}
 
 }
 
@@ -94,7 +78,7 @@ uint8_t Segments[7] = {0};
 
 void updateSegments(){
 static int i=0x123456;
-static tog = 0;
+static int tog = 0;
 	i++;
 	//210 543
 	Segments[3] = digitToSegment[i&0xf];
