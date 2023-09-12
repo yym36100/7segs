@@ -5,6 +5,8 @@ extern void Delay_us(uint32_t d);
 
 //adapt pins
 
+//todo: instead of doing this, use open drain port instead
+// not low level enough
 static void pinmode_clock(int mode) {
 	LL_GPIO_SetPinMode(seg_clock_GPIO_Port, seg_clock_Pin, 1-mode);
 }
@@ -23,14 +25,21 @@ void bitDelay() {
 	Delay_us(200);
 }
 
+void hbitDelay() {
+	Delay_us(100);
+}
+
 void start() {
 	pinmode_data(0);
 	bitDelay();
 }
 
 void stop() {
+	pinmode_clock(0);
+	hbitDelay();
 	pinmode_data(0);
-	bitDelay();
+	hbitDelay();
+
 	pinmode_clock(1);
 	bitDelay();
 	pinmode_data(1);
@@ -44,21 +53,20 @@ void writeByte(uint8_t b) {
   for(uint8_t i = 0; i < 8; i++) {
     // CLK low
 	  pinmode_clock(0);
-    bitDelay();
+	  hbitDelay();
 
 	// Set data bit
-    if (data & 0x01)
-    	pinmode_data(1);
-    else
-    	pinmode_data(0);
+    if (data & 0x01) pinmode_data(1);
+    else pinmode_data(0);
 
-    bitDelay();
+    hbitDelay();
 
 	// CLK high
     pinmode_clock(1);
     bitDelay();
     data = data >> 1;
   }
+
 
   // Wait for acknowledge
   // CLK to zero
@@ -73,10 +81,11 @@ void writeByte(uint8_t b) {
  // if (ack == 0)
   pinmode_data(0);
 
-
+/*
   bitDelay();
   pinmode_clock(0);
   bitDelay();
+  */
 
 }
 

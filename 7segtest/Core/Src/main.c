@@ -41,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim11;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -51,6 +53,7 @@ UART_HandleTypeDef huart1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM11_Init(void);
 /* USER CODE BEGIN PFP */
 
 int __io_putchar(int ch) {
@@ -59,6 +62,13 @@ int __io_putchar(int ch) {
 }
 
 void Delay_us(uint32_t d){
+	//using timer 11
+	htim11.Instance->CNT = 0;
+	while(htim11.Instance->CNT<d*96);
+
+}
+
+void Delay_us2(uint32_t d){
 	//systick downconts from reload val
 
 	//int32_t start = SysTick->VAL;
@@ -80,6 +90,23 @@ void Delay_us(uint32_t d){
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t Segments[7] = {0};
+
+void updateSegments(){
+static int i=0;
+static tog = 0;
+	i++;
+	//210 543
+	Segments[3] = digitToSegment[i&0xf];
+	Segments[4] = digitToSegment[(i>>4)&0xf];
+	Segments[5] = digitToSegment[(i>>8)&0xf];
+	Segments[0] = digitToSegment[(i>>12)&0xf];
+	Segments[1] = digitToSegment[(i>>16)&0xf];
+	Segments[2] = digitToSegment[(i>>20)&0xf];
+
+	if((i&0xf)==0xf) tog^=1;
+	if(tog) Segments[2] |= 0x80;
+}
 
 /* USER CODE END 0 */
 
@@ -106,15 +133,18 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  tm1637_init();
+
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   printf("Hello 100ms RAM\n");
+  HAL_TIM_Base_Start(&htim11);
+  tm1637_init();
 
 
   /* USER CODE END 2 */
@@ -130,7 +160,9 @@ int main(void)
 	  HAL_GPIO_TogglePin(nLED_GPIO_Port,nLED_Pin);
 	  HAL_Delay(10);
 	  //Delay_us(10);
-	  tm1637_init();
+	  //tm1637_init();
+	  updateSegments();
+	  setSegments(Segments,6,0);
   }
   /* USER CODE END 3 */
 }
@@ -178,6 +210,37 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM11 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM11_Init(void)
+{
+
+  /* USER CODE BEGIN TIM11_Init 0 */
+
+  /* USER CODE END TIM11_Init 0 */
+
+  /* USER CODE BEGIN TIM11_Init 1 */
+
+  /* USER CODE END TIM11_Init 1 */
+  htim11.Instance = TIM11;
+  htim11.Init.Prescaler = 0;
+  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim11.Init.Period = 65535;
+  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM11_Init 2 */
+
+  /* USER CODE END TIM11_Init 2 */
+
 }
 
 /**
@@ -253,7 +316,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = seg_clock_Pin|seg_data_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
