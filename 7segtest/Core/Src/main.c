@@ -93,7 +93,7 @@ void Delay_us2(uint32_t d){
 uint8_t Segments[7] = {0};
 
 void updateSegments(){
-static int i=0;
+static int i=0x123456;
 static tog = 0;
 	i++;
 	//210 543
@@ -106,6 +106,7 @@ static tog = 0;
 
 	if((i&0xf)==0xf) tog^=1;
 	if(tog) Segments[2] |= 0x80;
+	if(tog) Segments[1] |= 0x80;
 }
 
 /* USER CODE END 0 */
@@ -314,7 +315,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : seg_clock_Pin seg_data_Pin */
   GPIO_InitStruct.Pin = seg_clock_Pin|seg_data_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

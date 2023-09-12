@@ -60,6 +60,14 @@ SECTIONS
   } >RAM
 
   /* The program code and other data into "RAM" Ram type memory */
+  
+    .tm1637_c :
+  {
+    . = ALIGN(4);
+    *tm1637.o (.text .text* .rodata .rodata*)           /* .text sections (code) */
+    
+  } >RAM
+  
   .text :
   {
     . = ALIGN(4);

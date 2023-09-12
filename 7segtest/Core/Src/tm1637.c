@@ -3,10 +3,13 @@
 
 extern void Delay_us(uint32_t d);
 
+// 444opt
+
 //adapt pins
 
 //todo: instead of doing this, use open drain port instead
 // not low level enough
+#if 1
 static void pinmode_clock(int mode) {
 	LL_GPIO_SetPinMode(seg_clock_GPIO_Port, seg_clock_Pin, 1-mode);
 }
@@ -20,6 +23,13 @@ static void pinmode_data(int mode) {
 static void pinset_data(int val) {
 	HAL_GPIO_WritePin(seg_data_GPIO_Port, seg_data_Pin, val);
 }
+#endif
+#define clk_1	seg_clock_GPIO_Port->BSRR = seg_clock_Pin
+#define clk_0	seg_clock_GPIO_Port->BSRR = seg_clock_Pin<<16
+
+#define dat_1	seg_data_GPIO_Port->BSRR = seg_data_Pin
+#define dat_0	seg_data_GPIO_Port->BSRR = seg_data_Pin<<16
+
 
 void bitDelay() {
 	Delay_us(200);
@@ -30,19 +40,24 @@ void hbitDelay() {
 }
 
 void start() {
-	pinmode_data(0);
+	//pinmode_data(0);
+	dat_0;
 	bitDelay();
 }
 
 void stop() {
-	pinmode_clock(0);
+	//pinmode_clock(0);
+	clk_0;
 	hbitDelay();
-	pinmode_data(0);
+	//pinmode_data(0);
+	dat_0;
 	hbitDelay();
 
-	pinmode_clock(1);
+	//pinmode_clock(1);
+	clk_1;
 	bitDelay();
-	pinmode_data(1);
+	dat_1;
+	//pinmode_data(1);
 	bitDelay();
 }
 
@@ -52,17 +67,19 @@ void writeByte(uint8_t b) {
   // 8 Data Bits
   for(uint8_t i = 0; i < 8; i++) {
     // CLK low
-	  pinmode_clock(0);
+	  //pinmode_clock(0);
+	  clk_0;
 	  hbitDelay();
 
 	// Set data bit
-    if (data & 0x01) pinmode_data(1);
-    else pinmode_data(0);
+    if (data & 0x01) dat_1;//pinmode_data(1);
+    else dat_0;//pinmode_data(0);
 
     hbitDelay();
 
 	// CLK high
-    pinmode_clock(1);
+    //pinmode_clock(1);
+    clk_1;
     bitDelay();
     data = data >> 1;
   }
@@ -70,16 +87,19 @@ void writeByte(uint8_t b) {
 
   // Wait for acknowledge
   // CLK to zero
-  pinmode_clock(0);
-  pinmode_data(1);
+  //pinmode_clock(0);
+  clk_0;
+  //pinmode_data(1);
+  dat_1;
   bitDelay();
 
   // CLK to high
-  pinmode_clock(1);
+  //pinmode_clock(1);
+  clk_1;
   bitDelay();
  // uint8_t ack = digitalRead(m_pinDIO);
  // if (ack == 0)
-  pinmode_data(0);
+  //pinmode_data(0);
 
 /*
   bitDelay();
@@ -141,10 +161,12 @@ void setSegments(const uint8_t segments[], uint8_t length, uint8_t pos) {
 }
 
 void tm1637_init(void) {
-	pinmode_clock(1);
-	pinmode_data(1);
-	pinset_clock(0);
-	pinset_data(0);
+	//pinmode_clock(1);
+	//pinmode_data(1);
+	//pinset_clock(0);
+	//pinset_data(0);
+	clk_1;
+	dat_1;
 
 	setSegments(digitToSegment,6,0);
 }
